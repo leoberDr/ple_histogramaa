@@ -1,20 +1,88 @@
-# Crear una tabla con 1000 filas y dos columnas:
-# - 'uniforme': números aleatorios de distribución uniforme [0,1]
-# - 'normal': números aleatorios de distribución normal (media=0, sd=1)
+temp <- runif(10000,min=25,max=35)
 
-set.seed(123) # Para reproducibilidad
+hist(temp, 
+     main = "Temperaturas en la ciudad de La Paz", 
+     xlab = "Temperatura (°C)", 
+     ylab = "Frecuencia", 
+     col = "lightblue", 
+     border = "black",
+    breaks = 9,
+     xlim = c(25, 35))
 
-tabla <- data.frame(
-    uniforme = runif(1000, min = 0, max = 1),
-    normal = rnorm(1000, mean = 0, sd = 1)
+
+# Tabla con dos variables
+df <- data.frame(
+    "Tunif"=runif(1000,min=25,max=35),
+    "Tnorm"=rnorm(1000,mean=30,sd=2)
 )
 
-# Mostrar las primeras filas de la tabla
-head(tabla)
+# Histograma de dos variables
+par(mfrow=c(1,2))
+hist(df$Tunif, 
+     main = "Temperaturas Distribución Uniforme", 
+     xlab = "Temperatura (°C)", 
+     ylab = "Frecuencia", 
+     col = "lightblue", 
+     border = "black",
+    breaks = 9,
+     xlim = c(25, 35))
+hist(df$Tnorm, 
+     main = "Temperaturas Distribución Normal", 
+     xlab = "Temperatura (°C)", 
+     ylab = "Frecuencia", 
+     col = "lightblue", 
+     border = "black",
+    breaks = 9,
+     xlim = c(25, 35))
 
-par(mfrow = c(1, 2)) # Configura la ventana gráfica para 1 fila y 2 columnas
 
-hist(tabla$uniforme, main = "Distribución Uniforme", xlab = "Valor", col = "skyblue", border = "white", breaks = 5)
-hist(tabla$normal, main = "Distribución Normal", xlab = "Valor", col = "salmon", border = "white", breaks = 5)
+HistogramasTabla <- function(df){
+     namvars <- names(df)
+     n <- length(namvars)
+     par(mfrow = c(1, n)) # Una fila, n columnas
+     for(var in namvars){
+          # Histograma para cada variable
+          if(is.numeric(df[[var]])){
+               hist(df[[var]], 
+                    main = var, 
+                    xlab = "Rangos", 
+                    ylab = "Frecuencia", 
+                    col = "lightblue", 
+                    border = "black",
+                    breaks = 9)
+          } else{
+               # Gráfico de barras para variables categóricas
+               barplot(table(df[[var]]), 
+                       main = var, 
+                       xlab = "Categoría", 
+                       ylab = "Frecuencia", 
+                       col = "lightblue", 
+                       border = "black")
+          }
+     }
+     par(mfrow = c(1, 1)) # Regresar a una sola gráfica
+}
 
-par(mfrow = c(1, 1)) # Restablece la configuración gráfica
+
+tabla <- data.frame(
+    "Tunif"=runif(1000,min=25,max=35),
+    "Texp"=rexp(1000,rate = 1/30),
+    "TnormA"=rnorm(1000,mean=0,sd=2),
+    "TnormB"=rnorm(1000,mean=10,sd=2),
+    "Enteros"=sample(1:10,10,replace = TRUE),
+    "Categoricos"=sample(LETTERS[1:26],1000,replace = TRUE)
+)
+
+HistogramasTabla(tabla)
+
+write.csv(tabla, file = "misdatos.csv", row.names = FALSE)
+
+
+# cargar archivo csv como dataframe
+df <- read.csv("misdatos.csv")
+
+#filtrar dataframe por la categoría "A"
+df_A <- df[df$Categoricos == "A", ]
+
+#calcular el promedio de las columnas numéricas
+promedios <- colMeans(df_A[sapply(df_A, is.numeric)], na.rm = TRUE)
